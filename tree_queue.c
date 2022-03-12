@@ -1,10 +1,10 @@
 #include "tree_queue.h"
 
-void enqueue(Queue *q, TreeNode *t, unsigned long priority) {
+void enqueue(Queue *q, TreeNode *data, unsigned long priority) {
     QueueNode * node = malloc(sizeof(QueueNode)); // allocate new node
     if (!node)
         exit(9); // cannot allocate memory for node
-    node->data = t; node->priority = priority; node->next = NULL;
+    node->data = data; node->priority = priority; node->next = NULL;
     if (!q->front)  { // init queue
         q->front = node;
         return;
@@ -31,7 +31,7 @@ QueueNode * dequeue(Queue *q) {
 }
 
 TreeNode * makeTree(Queue *q){
-    if (!q->front)
+    if (!q->front) // if queue is empty;
         return NULL;
     if (!q->front->next)
         return q->front->data;
