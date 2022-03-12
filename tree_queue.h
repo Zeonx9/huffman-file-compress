@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 typedef struct tree_node_ {
-    unsigned char symb;
+    unsigned char symbol;
     struct tree_node_ *left, *right;
 } TreeNode;
 
@@ -20,5 +20,6 @@ typedef struct {
 
 void enqueue(Queue *q, TreeNode *t, unsigned long priority);
 QueueNode * dequeue(Queue *q);
+TreeNode * makeTree(Queue *q);
 
 #endif //HUFFMAN_FILES_TREE_QUEUE_H
