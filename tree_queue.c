@@ -1,5 +1,6 @@
 #include "tree_queue.h"
 
+// memory allocated for each queue node (freed in makeTree() )
 void enqueue(Queue *q, TreeNode *data, unsigned long priority) {
     QueueNode * node = malloc(sizeof(QueueNode)); // allocate new node
     if (!node)
@@ -30,6 +31,7 @@ QueueNode * dequeue(Queue *q) {
     return out;
 }
 
+// memory allocated for each tree node (freed in deleteTree() )
 TreeNode * makeTree(Queue *q){
     if (!q->front) // if queue is empty;
         return NULL;
@@ -42,5 +44,15 @@ TreeNode * makeTree(Queue *q){
     tree->left = qn1->data, tree->right = qn2->data;
     tree->symbol = 0;
     enqueue(q, tree, qn1->priority + qn2->priority);
+    free(qn1); free(qn2);
     return makeTree(q);
+}
+
+// recursively delete tree
+void deleteTree(TreeNode * tree) {
+    if (!tree)
+        return;
+    deleteTree(tree->left);
+    deleteTree(tree->right);
+    free(tree);
 }

@@ -34,4 +34,7 @@ QueueNode * dequeue(Queue *q);
 /// method to build a Huffman tree using queue
 TreeNode * makeTree(Queue *q);
 
+/// method to delete tree and free space
+void deleteTree(TreeNode * tree);
+
 #endif //HUFFMAN_FILES_TREE_QUEUE_H
