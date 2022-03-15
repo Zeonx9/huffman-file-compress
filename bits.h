@@ -29,6 +29,6 @@ typedef union short_bytes_ {
 } ShortBytes;
 
 /// receive string of 8-length '0' and '1' sequence and return char with such code
-unsigned char convertStringByte(const char seq[8]);
+unsigned char convertStringByte(const unsigned char seq[8]);
 
 #endif //HUFFMAN_FILES_BITS_H

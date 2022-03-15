@@ -1,6 +1,6 @@
 #include "bits.h"
 
-unsigned char convertStringByte(const char seq[8]) {
+unsigned char convertStringByte(const unsigned char seq[8]) {
     CharBit converter = {};
     converter.bits.b1 = seq[0] == '1';
     converter.bits.b2 = seq[1] == '1';
