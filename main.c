@@ -23,11 +23,10 @@ void printCodeTable(char ** codeTable) {
 }
 
 int main() {
-    Encoder en = {"test.txt", 0, NULL, {}, NULL, NULL};
+    Encoder en = {"test.txt"};
     encode(&en);
 
     //show results
-    printQueue(en.initialQueue);
     printTree(en.tree, 0);
     printCodeTable(en.codeTable);
 
