@@ -20,6 +20,7 @@ typedef struct queue_node_ {
 /// wrapper for QueueNode, has pointer to first element of queue
 typedef struct {
     QueueNode *front;
+    int len;
 } Queue;
 
 // ---functions---

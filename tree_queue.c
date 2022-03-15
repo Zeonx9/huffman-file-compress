@@ -5,7 +5,10 @@ void enqueue(Queue *q, TreeNode *data, unsigned long priority) {
     QueueNode * node = malloc(sizeof(QueueNode)); // allocate new node
     if (!node)
         exit(9); // cannot allocate memory for node
-    node->data = data; node->priority = priority; node->next = NULL;
+    node->data = data;
+    node->priority = priority;
+    node->next = NULL;
+    ++q->len;
     if (!q->front)  { // init queue
         q->front = node;
         return;
@@ -32,7 +35,7 @@ QueueNode * dequeue(Queue *q) {
 }
 
 // memory allocated for each tree node (freed in deleteTree() )
-// que is empty after
+// queue is empty after
 TreeNode * makeTree(Queue *q){
     if (!q->front)
         exit(22); // empty queue
