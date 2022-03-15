@@ -1,6 +1,5 @@
 #ifndef HUFFMAN_FILES_TREE_QUEUE_H
 #define HUFFMAN_FILES_TREE_QUEUE_H
-#include <stdbool.h>
 #include <stdlib.h>
 
 // ---structures---

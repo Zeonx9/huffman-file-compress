@@ -32,20 +32,23 @@ QueueNode * dequeue(Queue *q) {
 }
 
 // memory allocated for each tree node (freed in deleteTree() )
+// que is empty after
 TreeNode * makeTree(Queue *q){
-    if (!q->front) // if queue is empty;
-        return NULL;
-    if (!q->front->next)
-        return q->front->data;
-    TreeNode *tree = malloc(sizeof(TreeNode));
-    if (!tree)
-        exit(10); // cannot allocate memory for tree node
-    QueueNode *qn1 = dequeue(q), *qn2 = dequeue(q);
-    tree->left = qn1->data, tree->right = qn2->data;
-    tree->symbol = 0;
-    enqueue(q, tree, qn1->priority + qn2->priority);
-    free(qn1); free(qn2);
-    return makeTree(q);
+    if (!q->front)
+        exit(22); // empty queue
+    while (q->front->next) {
+        TreeNode *tree = malloc(sizeof(TreeNode));
+        if (!tree)
+            exit(10); // cannot allocate memory for tree node
+        QueueNode *qn1 = dequeue(q), *qn2 = dequeue(q);
+        tree->left = qn1->data, tree->right = qn2->data;
+        tree->symbol = 0;
+        enqueue(q, tree, qn1->priority + qn2->priority);
+        free(qn1); free(qn2);
+    }
+    TreeNode *tree = q->front->data;
+    free(dequeue(q));
+    return tree;
 }
 
 // recursively delete tree
