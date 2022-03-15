@@ -18,13 +18,15 @@ typedef struct char_bit_ {
     };
 } CharBit;
 
+/// convert memory between unsigned long and bytes which represent it
 typedef union long_bytes_ {
     unsigned long asLong;
     unsigned char asBytes[4];
 } LongBytes;
 
+/// convert memory between  and bytes which represent it
 typedef union short_bytes_ {
-    unsigned long asShort;
+    short asShort;
     unsigned char asBytes[2];
 } ShortBytes;
 

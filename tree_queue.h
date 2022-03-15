@@ -18,7 +18,7 @@ typedef struct queue_node_ {
 } QueueNode;
 
 /// wrapper for QueueNode, has pointer to first element of queue
-typedef struct {
+typedef struct queue_{
     QueueNode *front;
     int len;
 } Queue;

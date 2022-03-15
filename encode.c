@@ -49,27 +49,27 @@ Queue createPriorityQueue(const unsigned long counter[256]) {
 }
 
 // memory allocated for each code of symbol in table of codes (freed in deleteEncoder() )
-void fillCodeTable(Encoder *en, TreeNode *tree, char *prefix, int prefixLen) {
+void fillCodeTable(CharCode *table, const TreeNode *tree, char *prefix, int prefixLen) {
     if (!tree) return;
     if (!tree->left && !tree->right) { // for symbols save complete code in the table
         if (!prefixLen) { // in case if tree contains only 1 node
             char *code = calloc(2, sizeof(char));
             code[0] = '0';
-            en->codeTable[tree->symbol] = (CharCode) {code, 1};
+            table[tree->symbol] = (CharCode) {code, 1};
             return;
         }
         char * code = calloc((prefixLen + 1), sizeof(char)); // allocate memory for code string
         if (!code) exit(40); // cannot allocate code of symbol
 
         strcpy(code, prefix); // copy prefix
-        en->codeTable[tree->symbol] = (CharCode) {code, prefixLen};
+        table[tree->symbol] = (CharCode) {code, prefixLen};
         prefix[prefixLen - 1] = 0; // clear to go back
         return;
     }
     prefix[prefixLen] = '0'; // for left subtree add '0'
-    fillCodeTable(en, tree->left, prefix, prefixLen + 1);
+    fillCodeTable(table, tree->left, prefix, prefixLen + 1);
     prefix[prefixLen] = '1'; // for right subtree add '1'
-    fillCodeTable(en, tree->right, prefix, prefixLen + 1);
+    fillCodeTable(table, tree->right, prefix, prefixLen + 1);
     prefix[prefixLen] = 0; // clear to go back
 }
 
@@ -101,7 +101,7 @@ void fillBuffer(Encoder *en) {
 
     // this buffer contains '0' & '1' string representation of encoded data
     // then it will be interpreted as byte sequence and writen to en->buffer
-    unsigned long tempBufLen = en->fileSize > 30 ? en->fileSize : 30,
+    unsigned long tempBufLen = en->fileSize > 4096 ? en->fileSize : 4096,
                   bufPos = en->bufPos;
     unsigned char *temp = calloc(tempBufLen, sizeof(unsigned char)),
                   *buffer = en->buffer;
@@ -109,7 +109,7 @@ void fillBuffer(Encoder *en) {
 
     while (!eof) {
         // copy codes of bytes to temp buffer
-        while (tempBufLen - tempPos >= 8) { // til can potentially contain next code-string
+        while (tempBufLen - tempPos >= 16) { // til can potentially contain next code-string
             // fill the buffer with string representation of codes
             int next_ch = fgetc(file);
             if (next_ch == EOF) { eof = 1; break; }
@@ -125,7 +125,6 @@ void fillBuffer(Encoder *en) {
         }
         memcpy(temp, temp + writenPos, tempPos - writenPos);
         tempPos -= writenPos;
-        for (unsigned long i = tempPos; i < tempBufLen; ++i) temp[i] = 0;
     }
     fclose(file);
     // write remain byte
@@ -149,7 +148,7 @@ void encode(Encoder *en) {
 
     char prefix[25] = "";
     en->codeTable = calloc(256, sizeof(CharCode));
-    fillCodeTable(en, tree, prefix, 0);
+    fillCodeTable(en->codeTable, tree, prefix, 0);
     deleteTree(tree);
     printCodeTable(en->codeTable);
 
@@ -157,7 +156,7 @@ void encode(Encoder *en) {
     fillMeta(en);
     fillBuffer(en);
 
-    FILE * out = fopen("output.ahf", "wb");
+    FILE * out = fopen(en->outName, "wb");
     if (!out) exit(63); // cannot open such file
     fwrite(en->buffer, 1, en->bufPos, out);
 }
