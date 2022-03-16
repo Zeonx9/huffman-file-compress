@@ -15,11 +15,11 @@ typedef struct encoder_ {
     char outName[100];
     unsigned long fileSize;
     // counted by according methods
-    unsigned long * counter;
+    unsigned long counter[256];
     short counterLen;
-    CharCode * codeTable;
+    CharCode codeTable[256];
     // needed to create output file
-    unsigned char * buffer;
+    unsigned char *buffer;
     unsigned long bufPos;
 } Encoder;
 
