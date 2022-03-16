@@ -4,10 +4,10 @@
 
 
 int main() {
-    Encoder en = {"text.txt", "output.ahf"};
+    Encoder en = {"test.txt", "output.ahf"};
     encode(&en);
     deleteEncoder(&en);
     Decoder dec = {"output.ahf"};
-    rebuildCounter(&dec);
+    recoverCounter(&dec);
     return 0;
 }

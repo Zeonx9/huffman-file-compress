@@ -7,6 +7,6 @@ typedef struct decoder{
     unsigned short int counterSize;
 }Decoder;
 
-void rebuildCounter(Decoder *decoder_);
+void recoverCounter(Decoder *dec);
 
 #endif //HUFFMAN_FILES_DECODE_H
