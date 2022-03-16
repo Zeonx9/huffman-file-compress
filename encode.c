@@ -26,10 +26,8 @@ void getCounterOfFile(Encoder *en) {
     en->fileSize = ftell(file);
     fseek(file, 0L, SEEK_SET);
 
-    unsigned long * counter = calloc(256, sizeof(unsigned long));
     for (unsigned long i = 0; i < en->fileSize; ++i) // fill counter
-        ++counter[(unsigned char) fgetc(file)];
-    en->counter = counter;
+        ++en->counter[(unsigned char) fgetc(file)];
     fclose(file);
 }
 
@@ -102,9 +100,9 @@ void fillBuffer(Encoder *en) {
     // this buffer contains '0' & '1' string representation of encoded data
     // then it will be interpreted as byte sequence and writen to en->buffer
     unsigned long tempBufLen = en->fileSize > 4096 ? en->fileSize : 4096,
-                  bufPos = en->bufPos;
+        bufPos = en->bufPos;
     unsigned char *temp = calloc(tempBufLen, sizeof(unsigned char)),
-                  *buffer = en->buffer;
+        *buffer = en->buffer;
     unsigned long tempPos = 0; int eof = 0;
 
     while (!eof) {
@@ -147,7 +145,6 @@ void encode(Encoder *en) {
     printTree(tree, 0);
 
     char prefix[25] = "";
-    en->codeTable = calloc(256, sizeof(CharCode));
     fillCodeTable(en->codeTable, tree, prefix, 0);
     deleteTree(tree);
     printCodeTable(en->codeTable);
@@ -165,9 +162,7 @@ void encode(Encoder *en) {
 // free all remain memory allocated for encoder
 void deleteEncoder(Encoder * en) {
     for (int i = 0; i < 256; ++i)
-        if (en->codeTable[i].code)
+        if (en->codeTable[i].len)
             free(en->codeTable[i].code);
-    free(en->codeTable);
-    free(en->counter);
     free(en->buffer);
 }
