@@ -3,4 +3,4 @@ project(Huffman_Files C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(Huffman_Files main.c tree_queue.c tree_queue.h encode.c encode.h bits.c bits.h)
+add_executable(Huffman_Files main.c tree_queue.c tree_queue.h encode.c encode.h bits.c bits.h decode.c decode.h)

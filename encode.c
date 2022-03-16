@@ -159,6 +159,7 @@ void encode(Encoder *en) {
     FILE * out = fopen(en->outName, "wb");
     if (!out) exit(63); // cannot open such file
     fwrite(en->buffer, 1, en->bufPos, out);
+    fclose(out);
 }
 
 // free all remain memory allocated for encoder
