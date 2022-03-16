@@ -13,3 +13,15 @@ unsigned char convertStringByte(const unsigned char seq[8]) {
     return converter.ch;
 }
 
+void convertByteString(unsigned char *buff, const unsigned char byte){
+    CharBit converter = {byte};
+    buff[0] = converter.bits.b1 ? '1' : '0';
+    buff[1] = converter.bits.b2 ? '1' : '0';
+    buff[2] = converter.bits.b3 ? '1' : '0';
+    buff[3] = converter.bits.b4 ? '1' : '0';
+    buff[4] = converter.bits.b5 ? '1' : '0';
+    buff[5] = converter.bits.b6 ? '1' : '0';
+    buff[6] = converter.bits.b7 ? '1' : '0';
+    buff[7] = converter.bits.b8 ? '1' : '0';
+}
+

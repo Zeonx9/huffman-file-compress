@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "bits.h"
+#include "encode.h"
+#include "tree_queue.h"
+
 
 void recoverCounter(Decoder *dec){
-    FILE* file = fopen(dec->fileName, "rb");
-    if (!file) exit(17); // no such file
-
+    FILE *file = dec->file;
     // counter size contain a real count of blocks of symbols to read
     ShortBytes sb;
     for (int i = 0; i < 2; ++i)
@@ -28,4 +29,24 @@ void recoverCounter(Decoder *dec){
         lb.asBytes[i] = (unsigned char) fgetc(file);
     }
     dec->inpFileSize = lb.asLong;
+}
+
+void writeDataToBuff(Decoder *dec){
+    FILE *file = dec->file;
+    char byte;
+    while ((byte = (char) fgetc(file)) != EOF){
+
+    }
+
+}
+
+
+void decode(Decoder *dec){
+    dec->file = fopen(dec->fileName, "rb");
+    if (!dec->file) exit(17); // no such file
+    recoverCounter(dec);
+    unsigned long *counter = dec->counter;
+    Queue priorityQueue = createPriorityQueue(counter);
+    TreeNode *tree = makeTree(&priorityQueue);
+
 }
