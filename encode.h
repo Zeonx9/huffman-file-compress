@@ -2,6 +2,8 @@
 #define HUFFMAN_FILES_ENCODE_H
 #include "tree_queue.h"
 
+#define MAX_CODE_LEN 32
+
 /// container for new string-code of
 typedef struct char_code_ {
     char *code;
