@@ -107,7 +107,7 @@ void fillBuffer(Encoder *en) {
 
     while (!eof) {
         // copy codes of bytes to temp buffer
-        while (tempBufLen - tempPos >= 16) { // til can potentially contain next code-string
+        while (tempBufLen - tempPos >= MAX_CODE_LEN) { // til can potentially contain next code-string
             // fill the buffer with string representation of codes
             int next_ch = fgetc(file);
             if (next_ch == EOF) { eof = 1; break; }
@@ -144,7 +144,7 @@ void encode(Encoder *en) {
     TreeNode * tree = makeTree(&queue);
     printTree(tree, 0);
 
-    char prefix[25] = "";
+    char prefix[MAX_CODE_LEN + 1] = "";
     fillCodeTable(en->codeTable, tree, prefix, 0);
     deleteTree(tree);
     printCodeTable(en->codeTable);
