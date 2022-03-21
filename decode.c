@@ -73,7 +73,7 @@ void decode(Decoder *dec){
     dec->outBuff = (unsigned char*) malloc(dec->fileSize * sizeof(unsigned char));
     writeDataToBuff(dec);
 
-    FILE *outputFile = fopen("decoded.txt", "wb");
+    FILE *outputFile = fopen(dec->outName, "wb");
     if (!outputFile) exit(82); // cannot open out file
     fwrite(dec->outBuff, 1, dec->fileSize, outputFile);
     fclose(outputFile);
