@@ -1,15 +1,12 @@
 #include "decode.h"
-#include "encode.h"
-#include "bits.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "bits.h"
+
 
 void recoverCounter(Decoder *dec){
-    FILE* file = fopen(dec->fileName, "rb");
-    if (!file) exit(17); // no such file
-    dec->file = file;
-
+    FILE *file = dec->file;
     // counter size contain a real count of blocks of symbols to read
     ShortBytes sb;
     for (int i = 0; i < 2; ++i)
@@ -30,50 +27,61 @@ void recoverCounter(Decoder *dec){
     for (int i = 0; i < 4; ++i) {
         lb.asBytes[i] = (unsigned char) fgetc(file);
     }
-    dec->fileSize = lb.asLong;
+    dec->inpFileSize = lb.asLong;
 }
 
-int decodeByte(TreeNode * tree, unsigned char * dest, const unsigned char * src) {
-    int len = 0;
-    while (tree->left || tree->right)
-        tree = src[len++] == '1' ? tree->right : tree->left;
-    *dest = tree->symbol;
-    return len;
-}
 
-void fillOutBuffer(Decoder * dec) {
-    unsigned long tempLen = dec->fileSize > 4096 ? dec->fileSize : 4096,
-        bufPos = 0, tempPos = 0;
-    unsigned char *temp = malloc(tempLen * sizeof(unsigned char)), *buffer = dec->buffer;
-    int eof = 0;
-    while (!eof) {
-        for (; tempPos + 8 < tempLen; tempPos += 8) {
-            int byte = fgetc(dec->file);
-            if (byte == EOF) { eof = 1; break; }
-            convertByteString((unsigned char) byte, temp + tempPos);
-        }
-        unsigned long writenPos = 0;
-        while (eof ? (bufPos < dec->fileSize) : (tempPos - writenPos >= MAX_CODE_LEN))
-            writenPos += decodeByte(dec->tree, buffer + bufPos++, temp + writenPos);
-        tempPos -= writenPos;
-        memcpy(temp, temp + writenPos, tempPos);
+int decodeByte(TreeNode *tree, unsigned char *dest, const unsigned char *src){
+    int i = 0;
+    while (tree->left || tree->right){
+        tree = src[i++] == '0' ? tree->left : tree->right;
     }
-    fclose(dec->file);
+    *dest = tree->symbol;
+    return i;
 }
 
-void decode(Decoder *dec) {
+void writeDataToBuff(Decoder *dec){
+    FILE *file = dec->file;
+    unsigned long tempPos = 0, buffPos = 0, tempSize = dec->inpFileSize > 4096 ? dec->inpFileSize : 4096;
+    unsigned char *tempBuff = (unsigned char*) malloc(tempSize * sizeof(unsigned char));
+    int eof = 0;
+    while (!eof){
+        while (tempPos + 8 <= tempSize) {
+            int byte = fgetc(file);
+            if (byte == EOF) {
+                eof = 1;
+                break;
+            }
+            convertByteString(tempBuff + tempPos, byte);
+            tempPos += 8;
+        }
+
+        unsigned long writenPos = 0;
+        while (eof ? (buffPos < dec->inpFileSize) : (tempPos - writenPos >= MAX_CODE_LEN)){
+             writenPos += decodeByte(dec->tree, dec->outBuff + buffPos++, tempBuff + writenPos);
+        }
+
+        tempPos -= writenPos;
+        memcpy(tempBuff, tempBuff + writenPos, tempPos);
+    }
+    free(tempBuff);
+}
+
+
+void decode(Decoder *dec){
+    dec->file = fopen(dec->fileName, "rb");
+    if (!dec->file) exit(17); // no such file
     recoverCounter(dec);
-    Queue q = createPriorityQueue(dec->counter);
-    dec->tree = makeTree(&q);
-    dec->buffer = malloc(dec->fileSize * sizeof(unsigned char));
-    fillOutBuffer(dec);
-
-    FILE *out = fopen(dec->outName, "wb");
-    fwrite(dec->buffer, 1, dec->fileSize, out);
-    fclose(out);
-}
-
-void deleteDecoder(Decoder *dec) {
-    deleteTree(dec->tree);
-    free(dec->buffer);
+    unsigned long *counter = dec->counter;
+    Queue priorityQueue = createPriorityQueue(counter);
+    dec->tree = makeTree(&priorityQueue);
+    dec->outBuff = (unsigned char*) malloc(dec->inpFileSize * sizeof(unsigned char));
+    writeDataToBuff(dec);
+    FILE *outputFile = fopen("decoded.txt", "wb");
+    if (!outputFile){
+        exit(82);
+    }
+    fwrite(dec->outBuff, 1, dec->inpFileSize, outputFile);
+    fclose(outputFile);
+    free(dec->outBuff);
 }
