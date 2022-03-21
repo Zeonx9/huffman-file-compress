@@ -32,5 +32,7 @@ typedef union short_bytes_ {
 
 /// receive string of 8-length '0' and '1' sequence and return char with such code
 unsigned char convertStringByte(const unsigned char seq[8]);
+
+/// receive a byte and write its binary string representation to given buffer
 void convertByteString(unsigned char *buff, unsigned char byte);
 #endif //HUFFMAN_FILES_BITS_H

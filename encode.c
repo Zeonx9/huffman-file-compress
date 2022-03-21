@@ -118,9 +118,8 @@ void fillBuffer(Encoder *en) {
         }
         // copy encoded bytes to result buffer
         unsigned long writenPos = 0;
-        for (; writenPos + 8 <= tempPos; writenPos += 8) {
+        for (; writenPos + 8 <= tempPos; writenPos += 8)
             buffer[bufPos++] = convertStringByte(temp + writenPos);
-        }
         memcpy(temp, temp + writenPos, tempPos - writenPos);
         tempPos -= writenPos;
     }
