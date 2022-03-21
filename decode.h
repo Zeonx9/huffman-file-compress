@@ -1,13 +1,22 @@
 #ifndef HUFFMAN_FILES_DECODE_H
 #define HUFFMAN_FILES_DECODE_H
 
-typedef struct decoder{
-    char fileName[100];
-    unsigned long counter[256];
-    unsigned short int counterSize;
-    unsigned long int inpFileSize;
-}Decoder;
+#include <stdio.h>
+#include "tree_queue.h"
 
-void recoverCounter(Decoder *dec);
+typedef struct decoder_ {
+    char fileName[100];
+    char outName[100];
+    unsigned long fileSize;
+    FILE * file;
+    unsigned long counter[256];
+    short counterSize;
+    TreeNode * tree;
+    unsigned char * buffer;
+} Decoder;
+
+void decode(Decoder *dec);
+
+void deleteDecoder(Decoder *dec);
 
 #endif //HUFFMAN_FILES_DECODE_H
