@@ -25,6 +25,11 @@ void recoverCounter(Decoder *dec){
     for (int i = 0; i < 4; ++i)
         lb.asBytes[i] = (unsigned char) fgetc(file);
     dec->fileSize = lb.asLong;
+
+    unsigned char lenOfExt = (unsigned char) fgetc(file);
+    unsigned char lenOfOutName = (unsigned char) strlen(dec->outName);
+    for (int i = 0; i < lenOfExt; ++i)
+        dec->outName[lenOfOutName + i] = (char) fgetc(file);
 }
 
 
@@ -63,8 +68,10 @@ void writeDataToBuff(Decoder *dec){
 
 
 void decode(Decoder *dec){
+    // extension should not be included here
+    strcat(dec->fileName, ".aahf");
     dec->file = fopen(dec->fileName, "rb");
-    if (!dec->file) exit(17); // no such file
+    if (!dec->file) { printf("(!) cannot open such file: %s", dec->fileName); exit(33); }
 
     recoverCounter(dec);
     Queue q = createPriorityQueue(dec->counter);
@@ -74,7 +81,7 @@ void decode(Decoder *dec){
     writeDataToBuff(dec);
 
     FILE *outputFile = fopen(dec->outName, "wb");
-    if (!outputFile) exit(82); // cannot open out file
+    if (!outputFile) { printf("(!) cannot open such file: %s", dec->outName); exit(83); }
     fwrite(dec->outBuff, 1, dec->fileSize, outputFile);
     fclose(outputFile);
 }
