@@ -21,7 +21,7 @@ void printCodeTable(CharCode * codeTable) {
 // count frequency of each character within file
 void getCounterOfFile(Encoder *en) {
     FILE * file = fopen(en->fileName, "rb");
-    if (!file) exit(13); // cannot open file
+    if (!file) { printf("(!) cannot open such file: %s", en->fileName); exit(13);} // cannot open file
     fseek(file, 0L, SEEK_END);
     en->fileSize = ftell(file);
     fseek(file, 0L, SEEK_SET);
@@ -38,7 +38,7 @@ Queue createPriorityQueue(const unsigned long counter[256]) {
     for (int i = 0; i < 256; ++i)
         if (counter[i]) { // for every encouraged char in the text add it to queue with its frequency as a priority
             TreeNode *node = malloc(sizeof(TreeNode));
-            if (!node) exit(14); // cannot allocate memory
+            if (!node) { printf("(!) cannot allocate memory for TreeNode while creating queue."); exit(10);}
             node->right = node->left = NULL; // final node
             node->symbol = (unsigned char) i;
             enqueue(&q, node, counter[i]); // put in queue
@@ -57,7 +57,7 @@ void fillCodeTable(CharCode *table, const TreeNode *tree, char *prefix, int pref
             return;
         }
         char * code = calloc((prefixLen + 1), sizeof(char)); // allocate memory for code string
-        if (!code) exit(40); // cannot allocate code of symbol
+        if (!code) { printf("(!) cannot allocate memory for code of symbol while filling code table"); exit(40); }
 
         strcpy(code, prefix); // copy prefix
         table[tree->symbol] = (CharCode) {code, prefixLen};
@@ -88,14 +88,22 @@ void fillMeta(Encoder *en) {
             bufPos += 4;
         }
     lb.asLong = en->fileSize;
+    // then 4 bytes for length of initial file
     memcpy(buffer + bufPos, lb.asBytes, 4);
-    en->bufPos = bufPos + 4;
+    bufPos += 4;
+
+    // put file extension after counter
+    unsigned char lenOfName = (unsigned char) strlen(en->fileName), lenOfExt = 0;
+    while (en->fileName[lenOfName - ++lenOfExt] != '.');
+    buffer[bufPos++] = lenOfExt;
+    memcpy(buffer + bufPos, en->fileName + lenOfName - lenOfExt, lenOfExt);
+    en->bufPos = bufPos + lenOfExt;
 }
 
 // memory for buffer, temp buffer allocated (no free)
 void fillBuffer(Encoder *en) {
     FILE *file = fopen(en->fileName, "rb");
-    if (!file) exit(20); // cannot allocate
+    if (!file) { printf("(!) cannot open such file: %s", en->fileName); exit(23); }
 
     // this buffer contains '0' & '1' string representation of encoded data
     // then it will be interpreted as byte sequence and writen to en->buffer
@@ -141,19 +149,20 @@ void encode(Encoder *en) {
     Queue queue = createPriorityQueue(en->counter);
     en->counterLen = (short) queue.len;
     TreeNode * tree = makeTree(&queue);
-    printTree(tree, 0);
+    //printTree(tree, 0);
 
     char prefix[MAX_CODE_LEN + 1] = "";
     fillCodeTable(en->codeTable, tree, prefix, 0);
     deleteTree(tree);
-    printCodeTable(en->codeTable);
+    //printCodeTable(en->codeTable);
 
     en->buffer = calloc(en->fileSize + (6 + 5 * en->counterLen), sizeof(unsigned char));
     fillMeta(en);
     fillBuffer(en);
 
+    strcat(en->outName, ".aahf");
     FILE * out = fopen(en->outName, "wb");
-    if (!out) exit(63); // cannot open such file
+    if (!out) { printf("(!) cannot open such file: %s", en->outName); exit(63); }
     fwrite(en->buffer, 1, en->bufPos, out);
     fclose(out);
 }
