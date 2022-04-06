@@ -3,6 +3,7 @@
 #include "tree_queue.h"
 
 #define MAX_CODE_LEN 32
+#define MAX_BUFFER_SIZE 35000000
 
 /// container for new string-code of
 typedef struct char_code_ {

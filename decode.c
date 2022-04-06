@@ -2,6 +2,7 @@
 #include <string.h>
 #include "bits.h"
 #include "encode.h"
+#include "progress_bar.h"
 
 void recoverCounter(Decoder *dec){
     FILE *file = dec->file;
@@ -43,7 +44,8 @@ int decodeByte(TreeNode *tree, unsigned char *dest, const unsigned char *src){
 }
 
 void writeDataToBuff(Decoder *dec){
-    unsigned long tempSize = dec->fileSize > 4096 ? dec->fileSize : 4096,
+    unsigned long tempSize = dec->fileSize > 4096 ?
+            (dec->fileSize > MAX_BUFFER_SIZE ? MAX_BUFFER_SIZE : dec->fileSize) : 4096,
             tempPos = 0, buffPos = 0;
     unsigned char *tempBuff = (unsigned char*) malloc(tempSize * sizeof(unsigned char));
     int eof = 0;
@@ -62,6 +64,7 @@ void writeDataToBuff(Decoder *dec){
              writenPos += decodeByte(dec->tree, dec->outBuff + buffPos++, tempBuff + writenPos);
         tempPos -= writenPos;
         memcpy(tempBuff, tempBuff + writenPos, tempPos); // copy undecoded tail of temp to its start
+        updateBar(buffPos);
     }
     free(tempBuff);
 }
@@ -71,19 +74,26 @@ void decode(Decoder *dec){
     // extension should not be included here
     strcat(dec->fileName, ".aahf");
     dec->file = fopen(dec->fileName, "rb");
-    if (!dec->file) { printf("(!) cannot open such file: %s", dec->fileName); exit(33); }
+    if (!dec->file) { printf("\n(!) cannot open such file: %s", dec->fileName); exit(33); }
+
+    strcpy(bar.msg, "decompressing . . . \n");
+    createBar();
 
     recoverCounter(dec);
+
+    FILE *outputFile = fopen(dec->outName, "wb");
+    if (!outputFile) { printf("\n(!) cannot open such file: %s", dec->outName); exit(83); }
+
+    bar.ful = dec->fileSize;
     Queue q = createPriorityQueue(dec->counter);
     dec->tree = makeTree(&q);
 
     dec->outBuff = (unsigned char*) malloc(dec->fileSize * sizeof(unsigned char));
     writeDataToBuff(dec);
 
-    FILE *outputFile = fopen(dec->outName, "wb");
-    if (!outputFile) { printf("(!) cannot open such file: %s", dec->outName); exit(83); }
     fwrite(dec->outBuff, 1, dec->fileSize, outputFile);
     fclose(outputFile);
+    printf("\n");
 }
 
 void deleteDecoder(Decoder * dec){
