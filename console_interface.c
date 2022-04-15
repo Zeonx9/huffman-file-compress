@@ -7,14 +7,24 @@
 
 void runConsoleFileCompression() {
     printf("--------------------------------------------------------------------\n");
-    printf("Enter a command (compress, decompress, exit) and follow instructions\n=>");
+    printf("Enter a command (compress / -c, decompress / -d, exit / -e) and follow instructions\n=> ");
     char command[100] = "", inName[100] = "", outName[100] = "";
     scanf("%s", command);
-    if (strcmp(command, "compress") == 0) {
-        printf("specify path to file to compress\n=>");
+    if (strcmp(command, "compress") == 0 || strcmp(command, "-c") == 0) {
+        printf("specify path to file to compress\n=> ");
         scanf("%s", inName);
-        printf("specify directory and name (without extension, it (.aahf) will be added automatically) of output file\n=>");
-        scanf("%s", outName);
+        fflush(stdin);
+        printf("specify directory and name of output file\n"
+               "(without extension, it (.aahf) will be added automatically)\n"
+               "or press enter to give compressed file same name as input\n=> ");
+        scanf("%c", outName);
+        if (outName[0] != '\n') scanf("%s", outName + 1);
+        else {
+            strcpy(outName, inName);
+            int i = (int) strlen(outName) - 1;
+            while(outName[i] != '.') --i;
+            outName[i] = 0;
+        }
 
         Encoder en = {};
         strcpy(en.fileName, inName);
@@ -27,16 +37,20 @@ void runConsoleFileCompression() {
         signed long long dif = en.fileSize;
         dif -= en.bufPos;
         printf("total compression is about %.2lf%% (%ld Kb)\n",
-               (double) dif / en.fileSize * 100, dif / 1024);
+               (double) dif / en.fileSize * 100, (long) dif / 1024);
         deleteEncoder(&en);
         runConsoleFileCompression();
     }
-    else if (strcmp(command, "decompress") == 0) {
-        printf("specify path to compressed file (.aahf), name should not include this extension)\n=>");
+    else if (strcmp(command, "decompress") == 0 || strcmp(command, "-d") == 0) {
+        printf("specify path to compressed file (.aahf), name should not include this extension)\n=> ");
         scanf("%s", inName);
+        fflush(stdin);
         printf("specify directory and name, where you want decompressed file to be\n"
-               "(also without extension, it will be recovered automatically)\n=>");
-        scanf("%s", outName);
+               "(also without extension, it will be recovered automatically)\n"
+               "or skip and output file will have the same name as compressed\n=> ");
+        scanf("%c", outName);
+        if (outName[0] != '\n') scanf("%s", outName + 1);
+        else strcpy(outName, inName);
 
         Decoder dec = {};
         strcpy(dec.fileName, inName);
@@ -50,7 +64,7 @@ void runConsoleFileCompression() {
         runConsoleFileCompression();
     }
 
-    else if (strcmp(command, "exit") == 0)
+    else if (strcmp(command, "exit") == 0 || strcmp(command, "-e") == 0)
         return;
     else {
         printf("(!) your command can not be interpreted, only \"compress\", \"decompress\" and \"exit\" are possible!\n");
