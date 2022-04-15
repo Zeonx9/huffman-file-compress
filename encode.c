@@ -32,7 +32,7 @@ void getCounterOfFile(Encoder *en) {
     bar.ful = en->fileSize;
     for (unsigned long i = 0; i < en->fileSize; ++i) { // fill counter
         ++en->counter[(unsigned char) fgetc(file)];
-        if (i % 1000000 == 0)
+        if (i % 10000000 == 0)
             updateBar(i);
     }
     fclose(file);
@@ -121,13 +121,13 @@ void fillBuffer(Encoder *en) {
         bufPos = en->bufPos;
     unsigned char *temp = calloc(tempBufLen, sizeof(unsigned char)),
         *buffer = en->buffer;
-    unsigned long tempPos = 0; int eof = 0;
+    unsigned long tempPos = 0, progress = 0; int eof = 0;
 
     while (!eof) {
         // copy codes of bytes to temp buffer
         while (tempBufLen - tempPos >= MAX_CODE_LEN) { // til can potentially contain next code-string
             // fill the buffer with string representation of codes
-            int next_ch = fgetc(file);
+            int next_ch = fgetc(file); ++progress;
             if (next_ch == EOF) { eof = 1; break; }
 
             CharCode code = en->codeTable[next_ch];
@@ -140,7 +140,7 @@ void fillBuffer(Encoder *en) {
             buffer[bufPos++] = convertStringByte(temp + writenPos);
         memcpy(temp, temp + writenPos, tempPos - writenPos);
         tempPos -= writenPos;
-        updateBar(bufPos);
+        updateBar(progress);
     }
     fclose(file);
     // write remain byte
