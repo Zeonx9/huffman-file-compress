@@ -41,7 +41,7 @@ void runConsoleFileCompression() {
         clock_t end = clock();
         printf("file has been compressed, in %.3lf sec.\n", (double) (end - begin) / CLOCKS_PER_SEC );
         signed long long dif = en.fileSize;
-        dif -= en.bufPos;
+        dif -= en.bufPos + 5 * en.counterLen + 20;
         printf("total compression is about %.2lf%% (%ld Kb)\n",
                (double) dif / en.fileSize * 100, (long) dif / 1024);
         deleteEncoder(&en);
