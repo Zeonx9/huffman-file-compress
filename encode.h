@@ -1,5 +1,7 @@
 #ifndef HUFFMAN_FILES_ENCODE_H
 #define HUFFMAN_FILES_ENCODE_H
+
+#include <stdio.h>
 #include "tree_queue.h"
 
 #define MAX_CODE_LEN 32
@@ -21,6 +23,7 @@ typedef struct encoder_ {
     unsigned long counter[256];
     short counterLen;
     CharCode codeTable[256];
+    FILE * outfile;
     // needed to create output file
     unsigned char *buffer;
     unsigned long bufPos;

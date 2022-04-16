@@ -47,7 +47,7 @@ int decodeByte(TreeNode *tree, unsigned char *dest, const unsigned char *src){
 void writeDataToBuff(Decoder *dec){
     unsigned long tempSize = dec->fileSize > 4096 ?
             (dec->fileSize > MAX_BUFFER_SIZE ? MAX_BUFFER_SIZE : dec->fileSize) : 4096,
-            tempPos = 0, buffPos = 0;
+            tempPos = 0, buffPos = 0, progress = 0;
     unsigned char *tempBuff = (unsigned char*) malloc(tempSize * sizeof(unsigned char));
     int eof = 0;
     while (!eof){
@@ -61,13 +61,16 @@ void writeDataToBuff(Decoder *dec){
         // decode all bytes from given 1&0 sequence, if eof reached then decode til the end else
         // decode until possible max len of 1 code sequence cannot be fully contained in temp
         unsigned long writenPos = 0;
-        while (eof ? (buffPos < dec->fileSize) : (tempPos - writenPos >= MAX_CODE_LEN))
+        while (eof ? (progress + buffPos < dec->fileSize) : (tempPos - writenPos >= MAX_CODE_LEN))
              writenPos += decodeByte(dec->tree, dec->outBuff + buffPos++, tempBuff + writenPos);
         tempPos -= writenPos;
+        fwrite(dec->outBuff, 1, buffPos, dec->outfile);
+        progress += buffPos; buffPos = 0;
         memcpy(tempBuff, tempBuff + writenPos, tempPos); // copy undecoded tail of temp to its start
-        updateBar(buffPos);
+        updateBar(progress);
     }
     free(tempBuff);
+    fclose(dec->file);
 }
 
 
@@ -75,25 +78,24 @@ void decode(Decoder *dec){
     // extension should not be included here
     strcat(dec->fileName, ".aahf");
     dec->file = fopen(dec->fileName, "rb");
-    if (!dec->file) log(33, "cannot open such input aahf file");
+    if (!dec->file) logExit(33, "cannot open such input aahf file to decompress");
 
     strcpy(bar.msg, "decompressing . . . \n");
     createBar();
 
     recoverCounter(dec);
 
-    FILE *outputFile = fopen(dec->outName, "wb");
-    if (!outputFile) log(83, "cannot open such output file");
+    dec->outfile = fopen(dec->outName, "wb");
+    if (!dec->outfile) logExit(83, "cannot open such output file");
 
     bar.ful = dec->fileSize;
     Queue q = createPriorityQueue(dec->counter);
     dec->tree = makeTree(&q);
 
-    dec->outBuff = (unsigned char*) malloc(dec->fileSize * sizeof(unsigned char));
+    dec->outBuff = (unsigned char*) malloc(MAX_BUFFER_SIZE * sizeof(unsigned char));
     writeDataToBuff(dec);
 
-    fwrite(dec->outBuff, 1, dec->fileSize, outputFile);
-    fclose(outputFile);
+    fclose(dec->outfile);
     printf("\n");
 }
 

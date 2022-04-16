@@ -23,11 +23,12 @@ void printCodeTable(CharCode * codeTable) {
 // count frequency of each character within file
 void getCounterOfFile(Encoder *en) {
     FILE * file = fopen(en->fileName, "rb");
-    if (!file) log(13, "cannot open such input file");// cannot open file
+    if (!file) logExit(13, "cannot open such input file");// cannot open file
     fseek(file, 0L, SEEK_END);
     en->fileSize = ftell(file);
     fseek(file, 0L, SEEK_SET);
-    if (!en->fileSize) { fclose(file) ; log (0, "empty file given"); }
+    if (!en->fileSize) { fclose(file) ;
+        logExit(0, "empty file given"); }
     strcpy(bar.msg, "preparing . . .\n");
     createBar();
     bar.ful = en->fileSize;
@@ -49,7 +50,7 @@ Queue createPriorityQueue(const unsigned long counter[256]) {
     for (int i = 0; i < 256; ++i)
         if (counter[i]) { // for every encouraged char in the text add it to queue with its frequency as a priority
             TreeNode *node = malloc(sizeof(TreeNode));
-            if (!node) log(10, "cannot allocate memory for TreeNode while creating queue.");
+            if (!node) logExit(10, "cannot allocate memory for TreeNode while creating queue.");
             node->right = node->left = NULL; // final node
             node->symbol = (unsigned char) i;
             enqueue(&q, node, counter[i]); // put in queue
@@ -68,7 +69,7 @@ void fillCodeTable(CharCode *table, const TreeNode *tree, char *prefix, int pref
             return;
         }
         char * code = calloc((prefixLen + 1), sizeof(char)); // allocate memory for code string
-        if (!code) log(40, "cannot allocate memory for code of symbol while filling code table");
+        if (!code) logExit(40, "cannot allocate memory for code of symbol while filling code table");
         strcpy(code, prefix); // copy prefix
         table[tree->symbol] = (CharCode) {code, prefixLen};
         prefix[prefixLen - 1] = 0; // clear to go back
@@ -108,12 +109,14 @@ void fillMeta(Encoder *en) {
     buffer[bufPos++] = lenOfExt;
     memcpy(buffer + bufPos, en->fileName + lenOfName - lenOfExt, lenOfExt);
     en->bufPos = bufPos + lenOfExt;
+    fwrite(en->buffer, 1, en->bufPos, en->outfile);
+    en->bufPos = 0;
 }
 
 // memory for buffer, temp buffer allocated (no free)
-void fillBuffer(Encoder *en) {
+void codeText(Encoder *en) {
     FILE *file = fopen(en->fileName, "rb");
-    if (!file) log(23, "cannot open such input file");
+    if (!file) logExit(23, "cannot open such input file");
 
     // this buffer contains '0' & '1' string representation of encoded data
     // then it will be interpreted as byte sequence and writen to en->buffer
@@ -122,7 +125,7 @@ void fillBuffer(Encoder *en) {
         bufPos = en->bufPos;
     unsigned char *temp = calloc(tempBufLen, sizeof(unsigned char)),
         *buffer = en->buffer;
-    unsigned long tempPos = 0, progress = 0; int eof = 0;
+    unsigned long tempPos = 0, progress = 0, outsize = 0; int eof = 0;
 
     while (!eof) {
         // copy codes of bytes to temp buffer
@@ -141,6 +144,8 @@ void fillBuffer(Encoder *en) {
             buffer[bufPos++] = convertStringByte(temp + writenPos);
         memcpy(temp, temp + writenPos, tempPos - writenPos);
         tempPos -= writenPos;
+        fwrite(en->buffer, 1, bufPos, en->outfile);
+        outsize += bufPos; bufPos = 0;
         updateBar(progress);
     }
     fclose(file);
@@ -151,15 +156,17 @@ void fillBuffer(Encoder *en) {
         for (int i = (int) tempPos; i < 8; ++ i) rem[i] = '0';
         buffer[bufPos++] = convertStringByte(rem);
     }
-    en->bufPos = bufPos;
+    outsize += bufPos;
+    en->bufPos = outsize;
+    fwrite(en->buffer, 1, bufPos, en->outfile);
     free(temp);
 }
 
 // memory for code table and code lens is allocated (freed in deleteEncoder())
 void encode(Encoder *en) {
     strcat(en->outName, ".aahf");
-    FILE * out = fopen(en->outName, "wb");
-    if (!out) log(63, "cannot open such output file");
+    en->outfile = fopen(en->outName, "wb");
+    if (!en->outfile) logExit(63, "cannot open such output file");
 
     getCounterOfFile(en);
     strcpy(bar.msg, "compressing . . . \n");
@@ -176,14 +183,12 @@ void encode(Encoder *en) {
     deleteTree(tree);
     //printCodeTable(en->codeTable);
 
-    en->buffer = calloc(en->fileSize + 2000000 + (6 + 5 * en->counterLen), sizeof(unsigned char));
+    en->buffer = calloc(MAX_BUFFER_SIZE, sizeof(unsigned char));
     fillMeta(en);
-    fillBuffer(en);
+    codeText(en);
     updateBar(en->fileSize);
     printf("\n");
-
-    fwrite(en->buffer, 1, en->bufPos, out);
-    fclose(out);
+    fclose(en->outfile);
 }
 
 // free all remain memory allocated for encoder

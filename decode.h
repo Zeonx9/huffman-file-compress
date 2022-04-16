@@ -8,6 +8,7 @@ typedef struct decoder {
     char fileName[100];
     char outName[100];
     FILE *file;
+    FILE *outfile;
     // recovered from meta
     short counterSize;
     unsigned long counter[256];
