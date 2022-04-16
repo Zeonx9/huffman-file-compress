@@ -5,6 +5,12 @@
 #include "encode.h"
 #include "decode.h"
 
+void scanNameOrSkip(char * dest) {
+    do *dest = (char) getchar();
+    while (*dest++ != '\n');
+    dest[-1] = 0;
+}
+
 void runConsoleFileCompression() {
     printf("--------------------------------------------------------------------\n");
     printf("Enter a command (compress / -c, decompress / -d, exit / -e) and follow instructions\n=> ");
@@ -17,14 +23,14 @@ void runConsoleFileCompression() {
         printf("specify directory and name of output file\n"
                "(without extension, it (.aahf) will be added automatically)\n"
                "or press enter to give compressed file same name as input\n=> ");
-        scanf("%c", outName);
-        if (outName[0] != '\n') scanf("%s", outName + 1);
-        else {
+        scanNameOrSkip(outName);
+        if (!outName[0]) {
             strcpy(outName, inName);
             int i = (int) strlen(outName) - 1;
             while(outName[i] != '.') --i;
             outName[i] = 0;
         }
+        fflush(stdin);
 
         Encoder en = {};
         strcpy(en.fileName, inName);
@@ -48,9 +54,9 @@ void runConsoleFileCompression() {
         printf("specify directory and name, where you want decompressed file to be\n"
                "(also without extension, it will be recovered automatically)\n"
                "or skip and output file will have the same name as compressed\n=> ");
-        scanf("%c", outName);
-        if (outName[0] != '\n') scanf("%s", outName + 1);
-        else strcpy(outName, inName);
+        scanNameOrSkip(outName);
+        if (!outName[0]) strcpy(outName, inName);
+        fflush(stdin);
 
         Decoder dec = {};
         strcpy(dec.fileName, inName);

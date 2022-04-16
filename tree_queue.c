@@ -1,9 +1,10 @@
 #include "tree_queue.h"
+#include "logs.h"
 
 // memory allocated for each queue node (freed in makeTree() )
 void enqueue(Queue *q, TreeNode *data, unsigned long priority) {
     QueueNode * node = malloc(sizeof(QueueNode)); // allocate new node
-    if (!node) exit(90); // cannot allocate memory for node
+    if (!node) log(90, "cannot allocate q_node"); // cannot allocate memory for node
     node->data = data;
     node->priority = priority;
     node->next = NULL;
@@ -25,9 +26,7 @@ void enqueue(Queue *q, TreeNode *data, unsigned long priority) {
 }
 
 QueueNode * dequeue(Queue *q) {
-    if (!q->front) { // error if queue is empty
-        exit(15);
-    }
+    if (!q->front) log(15, "empty queue (dequeue)"); // error if queue is empty
     QueueNode *out = q->front;
     q->front = q->front->next;
     return out;
@@ -36,11 +35,10 @@ QueueNode * dequeue(Queue *q) {
 // memory allocated for each tree node (freed in deleteTree() )
 // queue is empty after
 TreeNode * makeTree(Queue *q){
-    if (!q->front)
-        exit(22); // empty queue
+    if (!q->front) log(22, "empty queue (building tree)");
     while (q->front->next) {
         TreeNode *tree = malloc(sizeof(TreeNode));
-        if (!tree) exit(50); // cannot allocate memory for tree node
+        if (!tree) log(50, "cannot allocate tree_node"); // cannot allocate memory for tree node
         QueueNode *qn1 = dequeue(q), *qn2 = dequeue(q);
         tree->left = qn1->data, tree->right = qn2->data;
         tree->symbol = 0;

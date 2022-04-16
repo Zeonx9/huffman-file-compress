@@ -3,6 +3,7 @@
 #include "bits.h"
 #include "encode.h"
 #include "progress_bar.h"
+#include "logs.h"
 
 void recoverCounter(Decoder *dec){
     FILE *file = dec->file;
@@ -74,7 +75,7 @@ void decode(Decoder *dec){
     // extension should not be included here
     strcat(dec->fileName, ".aahf");
     dec->file = fopen(dec->fileName, "rb");
-    if (!dec->file) { printf("\n(!) cannot open such file: %s", dec->fileName); exit(33); }
+    if (!dec->file) log(33, "cannot open such input aahf file");
 
     strcpy(bar.msg, "decompressing . . . \n");
     createBar();
@@ -82,7 +83,7 @@ void decode(Decoder *dec){
     recoverCounter(dec);
 
     FILE *outputFile = fopen(dec->outName, "wb");
-    if (!outputFile) { printf("\n(!) cannot open such file: %s", dec->outName); exit(83); }
+    if (!outputFile) log(83, "cannot open such output file");
 
     bar.ful = dec->fileSize;
     Queue q = createPriorityQueue(dec->counter);
